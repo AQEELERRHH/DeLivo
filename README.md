@@ -19,7 +19,7 @@ AI-Verified Parcel Delivery · Built on GenLayer Intelligent Contracts
 
 Every day billions of parcels are shipped globally and a significant portion end in disputes. The most common complaint: **"delivered but not received."**
 
-The root cause is simple: no one has proof. Delivery drivers have no cryptographic record. Recipients have no way to verify. And traditional smart contracts cannot help — they are deterministic and blind to the real world. They cannot read GPS data, analyse photos, or reason about whether a route made sense.
+The root cause is simple: no one has proof. Delivery drivers have no cryptographic record. Recipients have no way to verify. And traditional smart contracts cannot help they are deterministic and blind to the real world. They cannot read GPS data, analyse photos, or reason about whether a route made sense.
 
 The industry loses an estimated **$22 billion annually** to delivery fraud and disputes, resolved manually, slowly, and often unfairly.
 
@@ -33,7 +33,7 @@ When a driver marks a parcel as delivered, the contract does not just take their
 
 1. Checks the GPS coordinates and timestamps for route consistency
 2. Fetches the delivery photo proof and analyses it with AI
-3. Runs fraud detection — looking for GPS spoofing, impossible speeds, or suspicious stops
+3. Runs fraud detection looking for GPS spoofing, impossible speeds, or suspicious stops
 4. Only releases payment when multiple AI validators reach consensus that the delivery is legitimate
 
 If anything looks wrong, payment stays locked in escrow. The recipient can confirm it themselves, or escalate to GenLayer's validator court for arbitration.
@@ -46,15 +46,15 @@ The result: no more "delivered but not received" disputes without on-chain proof
 
 This contract could not exist on any other platform.
 
-Traditional smart contracts are deterministic — they can only execute simple logic against data already on-chain. They cannot call external URLs, fetch images, or reason about whether a delivery route was plausible.
+Traditional smart contracts are deterministic they can only execute simple logic against data already on-chain. They cannot call external URLs, fetch images, or reason about whether a delivery route was plausible.
 
 GenLayer Intelligent Contracts are different. They run Python with access to LLMs and the live web. The key primitives DeLivo uses:
 
-- `gl.get_webpage(url)` — fetches the delivery photo directly from IPFS without an oracle
-- `gl.exec_prompt(...)` — runs fraud detection logic through an LLM
-- `gl.eq_principle_prompt_non_comparative(...)` — sends the same prompt to multiple independent validators and reaches consensus on the result
+- `gl.get_webpage(url)` fetches the delivery photo directly from IPFS without an oracle
+- `gl.exec_prompt(...)` runs fraud detection logic through an LLM
+- `gl.eq_principle_prompt_non_comparative(...)` sends the same prompt to multiple independent validators and reaches consensus on the result
 
-That last point is what makes DeLivo trustless. No single AI makes the call. Multiple validators independently assess the delivery evidence and must agree. This is GenLayer's **Optimistic Democracy** — a decentralised AI court, not a single judge.
+That last point is what makes DeLivo trustless. No single AI makes the call. Multiple validators independently assess the delivery evidence and must agree. This is GenLayer's **Optimistic Democracy** a decentralised AI court, not a single judge.
 
 | What DeLivo needs | Traditional Contract | GenLayer |
 |---|---|---|
@@ -104,13 +104,13 @@ pending → picked_up → in_transit → ai_reviewing
 
 ## Testing the Contract
 
-The deployed contract was deployed with `test_mode: True` and blank address fields. This means one wallet can act as all three roles — no need for multiple wallets.
+The deployed contract was deployed with `test_mode: True` and blank address fields. This means one wallet can act as all three roles no need for multiple wallets.
 
-### Option A — One-click test (recommended)
+### Option A One-click test (recommended)
 
 This runs a complete simulated Lagos to Ikeja delivery automatically, including pickup, waypoint, and AI verification. No fields to fill in except your private key.
 
-**Step 1 — Confirm test mode**
+**Step 1 Confirm test mode**
 
 Read tab → `get_config` → Call
 
@@ -118,14 +118,14 @@ Expected response:
 ```json
 {
   "test_mode": true,
-  "tip": "test_mode ON — call run_test_delivery() to test the full flow",
+  "tip": "test_mode ON call run_test_delivery() to test the full flow",
   "delivery_id": "DLVR-...",
   "driver": "0xYourAddress",
   "recipient": "0xYourAddress"
 }
 ```
 
-**Step 2 — Run the test delivery**
+**Step 2 Run the test delivery**
 
 Write tab → `run_test_delivery`
 
@@ -133,9 +133,9 @@ Write tab → `run_test_delivery`
 |---|---|
 | Private key | Your testnet private key |
 
-Click Execute. This runs the full flow — pickup, waypoint, delivery, and AI fraud detection across GenLayer validators. Takes around 30 seconds.
+Click Execute. This runs the full flow pickup, waypoint, delivery, and AI fraud detection across GenLayer validators. Takes around 30 seconds.
 
-**Step 3 — See the AI verdict**
+**Step 3 See the AI verdict**
 
 Read tab → `get_ai_verdict` → Call
 
@@ -151,7 +151,7 @@ Expected response:
 }
 ```
 
-**Step 4 — Confirm delivery**
+**Step 4 Confirm delivery**
 
 Write tab → `confirm_delivery`
 
@@ -161,13 +161,13 @@ Write tab → `confirm_delivery`
 
 Click Execute. Payment is released to the driver.
 
-**Step 5 — Verify**
+**Step 5 Verify**
 
 Read tab → `is_paid` → Call → should return `true`
 
 ---
 
-### Option B — Manual step by step
+### Option B Manual step by step
 
 If you want to call each method yourself, use these exact values:
 
@@ -219,7 +219,7 @@ Then resolve it with `resolve_dispute`:
 
 ## Landing Page
 
-A full frontend is not built yet. The designs below show the intended product direction. The file `delivo_landing.html` is included in the repo — open it in any browser to see the interactive mockup with animations.
+A full frontend is not built yet. The designs below show the intended product direction. The file `delivo_landing.html` is included in the repo open it in any browser to see the interactive mockup with animations.
 
 ![Hero](mockup-hero.jpg)
 
@@ -235,7 +235,7 @@ A full frontend is not built yet. The designs below show the intended product di
 
 ```
 delivo/
-├── delivo_contract.py       # GenLayer Intelligent Contract — deploy this
+├── delivo_contract.py       # GenLayer Intelligent Contract deploy this
 ├── delivo_landing.html      # Landing page mockup (open in browser)
 ├── DeLivo_Pitch_Deck.pptx   # Pitch deck
 ├── screenshot-deploy.png    # Shipyard deploy screenshot
@@ -252,14 +252,14 @@ delivo/
 
 ## Built With
 
-- [GenLayer](https://genlayer.com) — Intelligent Contract platform
-- [Shipyard](https://app.genlayer.com) — deployment and interaction UI
-- [GenVM SDK](https://docs.genlayer.com) — Python smart contract SDK
+- [GenLayer](https://genlayer.com) Intelligent Contract platform
+- [Shipyard](https://app.genlayer.com) deployment and interaction UI
+- [GenVM SDK](https://docs.genlayer.com) Python smart contract SDK
 
 ---
 
 <div align="center">
 
-*DeLivo — Trust built into every handoff.*
+*DeLivo Trust built into every handoff.*
 
 </div>
