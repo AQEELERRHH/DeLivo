@@ -1,25 +1,12 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 # ============================================================
-#  DeLivo AI-Powered Parcel Delivery Verification
+#  DeLivo — AI-Powered Parcel Delivery Verification
 #  Built on GenLayer Intelligent Contracts
 #  "Trust built into every handoff."
 #
-# ============================================================
-#
-#  QUICK START (blank deploy on Shipyard):
-#
-#  1. Deploy with all fields empty → test_mode auto-enables
-#  2. Call get_config()            → confirm addresses + ID
-#  3. Call run_test_delivery()     → runs full happy-path flow
-#     with realistic sample data, no real photo URL needed
-#  4. Call get_ai_verdict()        → see the AI reasoning
-#  5. Call confirm_delivery()      → release payment, done ✓
-#
-#  PRODUCTION deploy:
-#    delivery_id = "DLVR-001"
-#    driver      = 0xDriverWalletAddress
-#    recipient   = 0xRecipientWalletAddress
-#    test_mode   = False  (default)
+#  v4 — fixed genvm-lint types:
+#       u256 for payment_amount, pickup_time, delivery_time
+#       DynArray for waypoints
 # ============================================================
 
 from genlayer import *
@@ -39,28 +26,28 @@ class DeLivo(gl.Contract):
 
     # ── Core identifiers ──────────────────────────────────────
     delivery_id:    str
-    shipper:        str     # Deployer — holds escrow, resolves disputes
-    driver:         str     # Authorised to log pickup + delivery
-    recipient:      str     # Authorised to confirm or dispute
-    payment_amount: int     # Escrowed at deploy time
+    shipper:        str
+    driver:         str
+    recipient:      str
+    payment_amount: u256        # ← sized type (was int)
 
     # ── Mode ──────────────────────────────────────────────────
-    test_mode: bool         # True → relaxed role checks + mock AI fallback
+    test_mode: bool
 
-    # ── Delivery status ───────────────────────────────────────
+    # ── Status ────────────────────────────────────────────────
     status: str
 
     # ── Pickup telemetry ──────────────────────────────────────
-    pickup_gps:  str        # JSON {"lat": float, "lng": float}
-    pickup_time: int        # Unix timestamp
+    pickup_gps:  str
+    pickup_time: u256           # ← sized type (was int)
 
     # ── Delivery telemetry ────────────────────────────────────
     delivery_gps:    str
-    delivery_time:   int
-    photo_proof_url: str    # IPFS / Arweave / HTTPS URL
+    delivery_time:   u256       # ← sized type (was int)
+    photo_proof_url: str
 
     # ── AI verification result ────────────────────────────────
-    ai_fraud_risk: str      # "low" | "medium" | "high"
+    ai_fraud_risk: str
     ai_route_ok:   bool
     ai_photo_ok:   bool
     ai_reasoning:  str
@@ -69,8 +56,9 @@ class DeLivo(gl.Contract):
     recipient_confirmed: bool
     dispute_reason:      str
 
-    # ── Waypoints (optional audit trail) ─────────────────────
-    waypoints: list
+    # ── Waypoints ─────────────────────────────────────────────
+    waypoints: DynArray[str, 50]   # ← DynArray instead of list
+    # Each entry is a JSON string: {"lat": float, "lng": float, "time": int, "note": str}
 
     # ═══════════════════════════════════════════════════════════
     #  CONSTRUCTOR
@@ -85,23 +73,18 @@ class DeLivo(gl.Contract):
     ):
         sender = gl.message.sender_address
 
-        # ── delivery_id: auto-generate if blank ───────────────
+        # Auto-generate delivery_id if blank
         if delivery_id.strip():
             self.delivery_id = delivery_id.strip()
         else:
             ts = gl.message.timestamp if hasattr(gl.message, "timestamp") else 0
             self.delivery_id = f"DLVR-{sender[-6:].upper()}-{ts}"
 
-        self.shipper = sender
-
-        # ── driver / recipient: default to deployer if blank ──
+        self.shipper   = sender
         self.driver    = driver.strip()    or sender
         self.recipient = recipient.strip() or sender
 
-        # ── test_mode: auto-enable on blank deploy ─────────────
-        # When all three roles point to the same address it means
-        # someone deployed without filling in args — enable test_mode
-        # automatically so they can run the full flow without errors.
+        # Auto-enable test_mode when all roles default to deployer
         all_same = (self.driver == sender and self.recipient == sender)
         self.test_mode = test_mode or all_same
 
@@ -109,9 +92,9 @@ class DeLivo(gl.Contract):
         self.status         = "pending"
 
         self.pickup_gps      = ""
-        self.pickup_time     = 0
+        self.pickup_time     = u256(0)
         self.delivery_gps    = ""
-        self.delivery_time   = 0
+        self.delivery_time   = u256(0)
         self.photo_proof_url = ""
 
         self.ai_fraud_risk = ""
@@ -121,17 +104,13 @@ class DeLivo(gl.Contract):
 
         self.recipient_confirmed = False
         self.dispute_reason      = ""
-        self.waypoints           = []
+        self.waypoints           = DynArray[str, 50]([])
 
     # ═══════════════════════════════════════════════════════════
-    #  INTERNAL: ROLE CHECK (relaxed in test_mode)
+    #  INTERNAL: ROLE CHECK
     # ═══════════════════════════════════════════════════════════
 
     def _assert_role(self, expected_address: str, role_name: str):
-        """
-        In test_mode any caller can act in any role.
-        In production mode the address check is strict.
-        """
         if not self.test_mode:
             assert gl.message.sender_address == expected_address, \
                 f"Only the {role_name} can call this method"
@@ -141,7 +120,7 @@ class DeLivo(gl.Contract):
     # ═══════════════════════════════════════════════════════════
 
     @gl.public.write
-    def log_pickup(self, lat: float, lng: float, timestamp: int):
+    def log_pickup(self, lat: float, lng: float, timestamp: u256):
         """Driver logs GPS + timestamp at moment of pickup."""
         self._assert_role(self.driver, "driver")
         assert self.status == "pending", \
@@ -152,17 +131,19 @@ class DeLivo(gl.Contract):
         self.status      = "picked_up"
 
     @gl.public.write
-    def log_waypoint(self, lat: float, lng: float, timestamp: int, note: str = ""):
+    def log_waypoint(self, lat: float, lng: float, timestamp: u256, note: str = ""):
         """Optional: add intermediate GPS checkpoint for audit trail."""
         self._assert_role(self.driver, "driver")
         assert self.status in ("picked_up", "in_transit"), \
             f"Cannot add waypoint — current status: {self.status}"
 
-        self.waypoints.append({
-            "gps":  {"lat": lat, "lng": lng},
-            "time": timestamp,
+        waypoint = json.dumps({
+            "lat":  lat,
+            "lng":  lng,
+            "time": int(timestamp),
             "note": note,
         })
+        self.waypoints.append(waypoint)
         self.status = "in_transit"
 
     @gl.public.write
@@ -170,16 +151,13 @@ class DeLivo(gl.Contract):
         self,
         lat:       float,
         lng:       float,
-        timestamp: int,
+        timestamp: u256,
         photo_url: str,
     ):
         """
         Driver submits delivery GPS + photo proof URL.
         Triggers DeLivo Shield AI verification via GenLayer validators.
-
-        photo_url: IPFS / Arweave / HTTPS URL to delivery photo.
-                   In test_mode you can pass any string — AI will still
-                   run but note the photo could not be fetched.
+        Validators screenshot the photo URL and analyse it visually.
         """
         self._assert_role(self.driver, "driver")
         assert self.status in ("picked_up", "in_transit"), \
@@ -200,62 +178,70 @@ class DeLivo(gl.Contract):
         pickup_data   = json.loads(self.pickup_gps)
         delivery_data = json.loads(self.delivery_gps)
 
+        # Parse waypoints from DynArray of JSON strings
+        parsed_waypoints = []
+        for wp_str in self.waypoints:
+            try:
+                parsed_waypoints.append(json.loads(wp_str))
+            except Exception:
+                pass
+
         context = {
             "delivery_id":   self.delivery_id,
             "pickup_gps":    pickup_data,
             "delivery_gps":  delivery_data,
-            "pickup_time":   self.pickup_time,
-            "delivery_time": self.delivery_time,
-            "waypoints":     self.waypoints,
+            "pickup_time":   int(self.pickup_time),
+            "delivery_time": int(self.delivery_time),
+            "waypoints":     parsed_waypoints,
             "photo_url":     self.photo_proof_url,
             "test_mode":     self.test_mode,
         }
 
         def verify_delivery():
-            # Fetch photo — gracefully handle missing / invalid URLs
-            photo_content = "No photo URL provided."
+            images = []
             if self.photo_proof_url.startswith("http"):
                 try:
-                    photo_content = gl.get_webpage(
-                        self.photo_proof_url, mode="text"
-                    )[:2000]
-                except Exception as e:
-                    photo_content = f"Photo fetch failed: {e}"
+                    screenshot = gl.nondet.web.render(
+                        self.photo_proof_url,
+                        mode="screenshot"
+                    )
+                    images = [screenshot]
+                except Exception:
+                    pass
 
             test_note = (
-                "\n\nNOTE: This is a TEST MODE delivery. "
-                "Be lenient — treat an unverifiable or missing photo "
-                "as acceptable. Evaluate route plausibility only."
+                "\n\nNOTE: TEST MODE — be lenient, focus on route plausibility, "
+                "accept missing photo proof."
                 if self.test_mode else ""
             )
 
-            result = gl.exec_prompt(f"""
-You are DeLivo Shield — an AI fraud detection engine for parcel delivery.
+            result = gl.nondet.exec_prompt(
+                f"""You are DeLivo Shield — an AI fraud detection engine for parcel delivery.
 
-Analyse this delivery and return ONLY a valid JSON object.
-No markdown, no preamble, no text outside the JSON.
+Analyse this delivery and return ONLY valid JSON. No markdown, no preamble.
 
 Delivery data:
 {json.dumps(context, indent=2)}
-
-Photo evidence:
-{photo_content}
 {test_note}
 
+{"Photo attached for visual analysis." if images else "No photo retrieved."}
+
 Evaluate:
-1. ROUTE CONSISTENCY   — Is delivery GPS plausible from pickup? Is transit time reasonable?
-2. ANOMALY DETECTION   — GPS spoofing? Impossible speed? Unexplained long stops? Reroutes?
-3. PHOTO PROOF         — Does evidence suggest a real delivery? (lenient if test_mode=true)
+1. ROUTE CONSISTENCY   — Plausible GPS path? Reasonable transit time?
+2. ANOMALY DETECTION   — GPS spoofing? Impossible speed? Suspicious stops?
+3. PHOTO PROOF         — Real delivery scene? Package visible?
 4. FRAUD RISK          — "low", "medium", or "high"
 
-Return EXACTLY this JSON:
+Return EXACTLY:
 {{
   "fraud_risk": "low|medium|high",
   "route_ok":   true|false,
   "photo_ok":   true|false,
   "reasoning":  "Max 200 words"
-}}
-""")
+}}""",
+                images=images if images else None,
+            )
+
             clean = result.strip()
             if clean.startswith("```"):
                 clean = clean.split("```")[1]
@@ -266,7 +252,7 @@ Return EXACTLY this JSON:
         verification = gl.eq_principle_prompt_non_comparative(
             verify_delivery,
             "Validators must agree on fraud_risk (low/medium/high), "
-            "route_ok (bool), and photo_ok (bool). Reasoning may differ."
+            "route_ok (bool), and photo_ok (bool)."
         )
 
         self.ai_fraud_risk = verification.get("fraud_risk", "high")
@@ -284,55 +270,37 @@ Return EXACTLY this JSON:
             self.status = "disputed"
 
     # ═══════════════════════════════════════════════════════════
-    #  ⚡ TEST HELPER — full happy-path in one call
+    #  TEST HELPER
     # ═══════════════════════════════════════════════════════════
 
     @gl.public.write
     def run_test_delivery(self):
         """
-        ONE-CLICK TEST FLOW — simulates a complete Lagos → Ikeja delivery.
-
-        Runs automatically:
-          log_pickup → log_waypoint → log_delivery → AI verify
-
-        After this returns, call:
-          get_ai_verdict()    → see what DeLivo Shield decided
-          confirm_delivery()  → complete the flow + release payment
-
+        ONE-CLICK TEST — simulates a Lagos → Ikeja delivery.
         Only available in test_mode (auto-enabled on blank deploys).
-        Deploy a fresh contract to run it again.
         """
-        assert self.test_mode, \
-            "run_test_delivery() is only available in test_mode. " \
-            "Deploy with blank args to enable test_mode automatically."
+        assert self.test_mode, "run_test_delivery() is only available in test_mode."
         assert self.status == "pending", \
-            f"Cannot run test — status is already '{self.status}'. " \
-            "Deploy a fresh contract to test again."
+            f"Status is '{self.status}' — deploy a fresh contract to test again."
 
-        # ── Simulated Lagos → Ikeja delivery ─────────────────
-        # Pickup:   Lagos Island (6.4550, 3.3841)
-        # Waypoint: Third Mainland Bridge (6.4698, 3.3887)
-        # Delivery: Ikeja GRA (6.6018, 3.3515)
-        # Transit:  45 minutes — plausible for Lagos traffic
+        t0 = u256(1_748_000_000)
+        t1 = u256(1_748_001_200)
+        t2 = u256(1_748_002_700)
 
-        t0 = 1_748_000_000          # base Unix timestamp
-        t1 = t0 + 1_200             # +20 min  (waypoint)
-        t2 = t0 + 2_700             # +45 min  (delivery)
-
-        # Step 1 — Pickup
+        # Pickup — Lagos Island
         self.pickup_gps  = json.dumps({"lat": 6.4550, "lng": 3.3841})
         self.pickup_time = t0
         self.status      = "picked_up"
 
-        # Step 2 — Mid-route waypoint
-        self.waypoints.append({
-            "gps":  {"lat": 6.4698, "lng": 3.3887},
-            "time": t1,
+        # Waypoint — Third Mainland Bridge
+        self.waypoints.append(json.dumps({
+            "lat": 6.4698, "lng": 3.3887,
+            "time": int(t1),
             "note": "Third Mainland Bridge checkpoint",
-        })
+        }))
         self.status = "in_transit"
 
-        # Step 3 — Delivery with a real fetchable image as photo proof
+        # Delivery — Ikeja GRA
         self.delivery_gps    = json.dumps({"lat": 6.6018, "lng": 3.3515})
         self.delivery_time   = t2
         self.photo_proof_url = (
@@ -342,7 +310,6 @@ Return EXACTLY this JSON:
         )
         self.status = "ai_reviewing"
 
-        # Step 4 — AI verification (live GenLayer LLM consensus)
         self._run_ai_verification()
 
     # ═══════════════════════════════════════════════════════════
@@ -351,10 +318,7 @@ Return EXACTLY this JSON:
 
     @gl.public.write
     def confirm_delivery(self):
-        """
-        Recipient confirms receipt → releases payment to driver.
-        Also works when AI flagged a dispute (recipient overrides AI).
-        """
+        """Recipient confirms receipt → releases payment to driver."""
         self._assert_role(self.recipient, "recipient")
         assert self.status in ("ai_approved", "disputed"), \
             f"Cannot confirm — current status: {self.status}"
@@ -365,11 +329,7 @@ Return EXACTLY this JSON:
 
     @gl.public.write
     def raise_dispute(self, reason: str):
-        """
-        Recipient formally disputes the delivery.
-        Escalates to GenLayer's Optimistic Democracy validator court.
-        Payment stays locked in escrow until resolve_dispute() is called.
-        """
+        """Escalates to GenLayer's Optimistic Democracy validator court."""
         self._assert_role(self.recipient, "recipient")
         assert self.status in ("ai_approved", "disputed"), \
             f"Cannot raise dispute — current status: {self.status}"
@@ -377,20 +337,9 @@ Return EXACTLY this JSON:
         self.dispute_reason = reason
         self.status = "escalated"
 
-    # ═══════════════════════════════════════════════════════════
-    #  DISPUTE RESOLUTION
-    # ═══════════════════════════════════════════════════════════
-
     @gl.public.write
     def resolve_dispute(self, favour_driver: bool):
-        """
-        Finalise an escalated dispute.
-        Production: called by GenLayer validator consensus network.
-        Testnet:    shipper calls manually to simulate resolution.
-
-        favour_driver=True  → pay driver, delivery considered valid
-        favour_driver=False → refund shipper, delivery considered failed
-        """
+        """Finalise escalated dispute. favour_driver=True pays driver, False refunds shipper."""
         self._assert_role(self.shipper, "shipper")
         assert self.status == "escalated", \
             f"No active dispute — current status: {self.status}"
@@ -402,17 +351,11 @@ Return EXACTLY this JSON:
             gl.transfer(self.shipper, self.payment_amount)
             self.status = "refunded"
 
-    # ═══════════════════════════════════════════════════════════
-    #  SHIPPER CANCEL (before pickup only)
-    # ═══════════════════════════════════════════════════════════
-
     @gl.public.write
     def cancel_delivery(self):
         """Cancel before pickup and reclaim escrowed payment."""
         self._assert_role(self.shipper, "shipper")
-        assert self.status == "pending", \
-            "Can only cancel before the driver picks up"
-
+        assert self.status == "pending", "Can only cancel before pickup"
         gl.transfer(self.shipper, self.payment_amount)
         self.status = "cancelled"
 
@@ -422,10 +365,6 @@ Return EXACTLY this JSON:
 
     @gl.public.view
     def get_config(self) -> dict:
-        """
-        Call right after deploying to confirm what was set.
-        Shows whether test_mode is active and what addresses were assigned.
-        """
         return {
             "delivery_id": self.delivery_id,
             "shipper":     self.shipper,
@@ -446,9 +385,9 @@ Return EXACTLY this JSON:
             "status":          self.status,
             "driver":          self.driver,
             "recipient":       self.recipient,
-            "payment_amount":  self.payment_amount,
-            "pickup_time":     self.pickup_time,
-            "delivery_time":   self.delivery_time,
+            "payment_amount":  int(self.payment_amount),
+            "pickup_time":     int(self.pickup_time),
+            "delivery_time":   int(self.delivery_time),
             "photo_proof_url": self.photo_proof_url,
             "waypoint_count":  len(self.waypoints),
         }
