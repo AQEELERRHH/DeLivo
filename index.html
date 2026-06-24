@@ -248,7 +248,7 @@ footer a{color:var(--teal);text-decoration:none}
 
 <script>
 const CONTRACT_ADDRESS = "0x731c3a7ABc8e9c5b84A4C3AC3a6a5bBf606Cf173";
-const GENLAYER_RPC = "https://studio.genlayer.com/api";
+const GENLAYER_RPC = "https://rpc-bradbury.genlayer.com";
 const CHAIN_ID = 23693;
 
 let connectedAddress = null;
@@ -277,7 +277,7 @@ async function callContract(method, args = {}) {
 // ── Write calls ─────────────────────────────────────────
 async function sendTransaction(method, args = {}) {
   if (!window.ethereum) {
-    throw new Error("No wallet found. Install MetaMask or Rabby and add GenLayer Bradbury (Chain ID 4221, RPC https://studio.genlayer.com/api).");
+    throw new Error("No wallet found. Install MetaMask or Rabby and add GenLayer Bradbury (Chain ID 4221, RPC https://rpc-bradbury.genlayer.com).");
   }
   const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
   const from = accounts[0];
@@ -291,7 +291,7 @@ async function sendTransaction(method, args = {}) {
         params: [{
           chainId: "0x" + (23693).toString(16),
           chainName: "GenLayer Testnet Bradbury",
-          rpcUrls: ["https://studio.genlayer.com/api"],
+          rpcUrls: ["https://rpc-bradbury.genlayer.com"],
           nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 },
           blockExplorerUrls: ["https://app.genlayer.com"]
         }]
