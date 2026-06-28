@@ -253,89 +253,68 @@ const CHAIN_ID = 4221;
 
 let connectedAddress = null;
 
-// ── Read calls ──────────────────────────────────────────
+// ── Read calls via genlayer-js ──────────────────────────
 async function callContract(method, args = {}) {
-  const res = await fetch(GENLAYER_RPC, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: Date.now(),
-      method: "gen_call",
-      params: [{
-        to: CONTRACT_ADDRESS,
-        from: "0x0000000000000000000000000000000000000000",
-        data: { method, args }
-      }]
-    })
+  const { createClient, testnetBradbury } = await import("https://esm.sh/genlayer-js@latest");
+  // Read-only client needs no account
+  const readClient = createClient({ chain: testnetBradbury });
+  const result = await readClient.readContract({
+    address: CONTRACT_ADDRESS,
+    functionName: method,
+    args: Object.values(args),
   });
-  const json = await res.json();
-  if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
-  return json.result;
+  return result;
 }
 
-// ── Write calls ─────────────────────────────────────────
+// ── Write calls via genlayer-js ─────────────────────────
+// genlayer-js handles all GenLayer-specific transaction encoding.
+// It supports MetaMask signing by passing the wallet address as account.
+let glClient = null;
+
+async function getGLClient() {
+  if (glClient) return glClient;
+  const { createClient, testnetBradbury } = await import("https://esm.sh/genlayer-js@latest");
+  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+  connectedAddress = accounts[0];
+  updateConnectButton();
+  // Pass wallet address — genlayer-js will use MetaMask for signing
+  glClient = createClient({
+    chain: testnetBradbury,
+    account: connectedAddress,
+  });
+  await glClient.initializeConsensusSmartContract();
+  return glClient;
+}
+
 async function sendTransaction(method, args = {}) {
   if (!window.ethereum) {
-    throw new Error("No wallet found. Install MetaMask or Rabby and add GenLayer Bradbury (Chain ID 4221, RPC https://zksync-os-testnet-genlayer.zksync.dev).");
+    throw new Error("No wallet found. Please install MetaMask.");
   }
-  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-  const from = accounts[0];
-  connectedAddress = from;
-  updateConnectButton();
-
-  const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
-  if (parseInt(chainIdHex, 16) !== CHAIN_ID) {
-    await window.ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [{
-          chainId: "0x" + (4221).toString(16),
-          chainName: "GenLayer Bradbury Testnet",
-          rpcUrls: ["https://zksync-os-testnet-genlayer.zksync.dev"],
-          nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 },
-          blockExplorerUrls: ["https://zksync-os-testnet-genlayer.explorer.zksync.dev"]
-        }]
-      });
-      throw new Error("Network added. Please try again.");
-  }
-
-  const txHash = await window.ethereum.request({
-    method: "eth_sendTransaction",
-    params: [{
-      from,
-      to: CONTRACT_ADDRESS,
-      data: JSON.stringify({ method, args }),
-      gas: "0x300000"
-    }]
+  const client = await getGLClient();
+  const txHash = await client.writeContract({
+    address: CONTRACT_ADDRESS,
+    functionName: method,
+    args: Object.values(args),
+    value: 0n,
   });
   return txHash;
 }
 
 async function waitForTx(txHash, statusEl) {
-  for (let i = 0; i < 60; i++) {
-    await new Promise(r => setTimeout(r, 3000));
-    try {
-      const res = await fetch(GENLAYER_RPC, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0", id: Date.now(),
-          method: "eth_getTransactionReceipt",
-          params: [txHash]
-        })
-      });
-      const json = await res.json();
-      if (json.result) {
-        const s = json.result.status;
-        if (s === "FINALIZED" || s === "ACCEPTED") return json.result;
-        if (s === "REJECTED") throw new Error("Transaction rejected by validators.");
-      }
-    } catch (e) {
-      if (e.message && e.message.includes("rejected")) throw e;
+  const { TransactionStatus } = await import("https://esm.sh/genlayer-js@latest");
+  const client = await getGLClient();
+  let elapsed = 0;
+  const receipt = await client.waitForTransactionReceipt({
+    hash: txHash,
+    status: TransactionStatus.FINALIZED,
+    retries: 100,
+    interval: 3000,
+    onRetry: () => {
+      elapsed += 3;
+      if (statusEl) statusEl.textContent = `Validators processing... (${elapsed}s elapsed)`;
     }
-    if (statusEl) statusEl.textContent = `Validators processing... (${(i+1)*3}s elapsed)`;
-  }
-  throw new Error("Timed out. Check explorer: https://explorer-bradbury.genlayer.com");
+  });
+  return receipt;
 }
 
 // ── Wallet UI ────────────────────────────────────────────
