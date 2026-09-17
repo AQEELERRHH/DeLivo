@@ -1,553 +1,655 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DeLivo — AI-Verified Parcel Delivery</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0d0e1a;
-  --surface:#131523;
-  --surface2:#1a1d33;
-  --border:#262a47;
-  --teal:#2bd9a3;
-  --teal-dim:#1f9e78;
-  --white:#f4f5fb;
-  --muted:#7d82a8;
-  --danger:#ff6b6b;
-  --warn:#ffc857;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 50% 0%, rgba(43,217,163,0.08) 0%, transparent 45%);pointer-events:none;z-index:0}
-.wrap{max-width:880px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+  :root {
+    --black:    #0A0E1A;
+    --navy:     #0D1535;
+    --mid:      #132047;
+    --border:   #1E2D50;
+    --green:    #00E5A0;
+    --green2:   #00C48A;
+    --white:    #FFFFFF;
+    --text:     #E8F0F8;
+    --muted:    #7A8BA8;
+    --red:      #FF4D6A;
+    --amber:    #F5A623;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--black); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
 
-header{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--border)}
-.logo{font-family:'DM Serif Display',serif;font-size:1.5rem}
-.logo .de{color:var(--white)}
-.logo .livo{color:var(--teal)}
-.net-pill{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--muted)}
-.net-dot{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--teal),var(--teal-dim));display:flex;align-items:center;justify-content:center;font-size:0.62rem;font-weight:700;color:var(--bg)}
-.header-right{display:flex;align-items:center;gap:16px}
-.connect-btn{background:var(--white);color:var(--bg);border:none;padding:10px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;transition:opacity .2s}
-.connect-btn:hover{opacity:0.85}
-.connect-btn.connected{background:var(--surface2);color:var(--teal);border:1px solid var(--teal-dim);font-family:'DM Mono',monospace;font-size:0.75rem}
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 2rem; border-bottom: 1px solid rgba(0,229,160,0.1);
+    background: rgba(10,14,26,0.92); backdrop-filter: blur(14px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--white); }
+  .logo span { color: var(--green); }
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .gl-badge { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+  .gl-dot { width: 20px; height: 20px; border-radius: 5px; background: linear-gradient(135deg, var(--green), #0D1535); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.6rem; color: #000; }
+  .wallet-pill { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--green); background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.2); border-radius: 100px; padding: 0.35rem 0.9rem; display: none; }
 
-.hero{text-align:center;padding:56px 0 40px}
-.hero h1{font-family:'DM Serif Display',serif;font-size:3rem;margin-bottom:14px}
-.hero h1 .de{color:var(--white)}
-.hero h1 .livo{color:var(--teal)}
-.hero p{color:var(--muted);font-size:1rem;max-width:540px;margin:0 auto;line-height:1.6}
+  .btn { padding: 0.65rem 1.4rem; border-radius: 8px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+  .btn-green  { background: var(--green); color: #000; }
+  .btn-green:hover  { background: var(--green2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,160,0.25); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.15); }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+  .btn-red    { background: var(--red); color: #fff; }
+  .btn-red:hover    { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
-.contract-badge{display:flex;align-items:center;justify-content:center;gap:8px;margin:20px 0 36px;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted)}
-.contract-badge code{color:var(--teal);background:var(--surface);padding:4px 10px;border-radius:6px;border:1px solid var(--border)}
-.contract-badge .pulse{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .page { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-.status-strip{display:flex;gap:10px;margin-bottom:32px;overflow-x:auto;padding-bottom:4px}
-.status-chip{flex:1;min-width:90px;text-align:center;padding:10px 8px;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:0.68rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
-.status-chip.active{border-color:var(--teal);color:var(--teal);background:rgba(43,217,163,0.08)}
+  #screenConnect { text-align: center; padding: 6rem 1rem; }
+  .hero-title { font-family: 'DM Serif Display', serif; font-size: clamp(2.8rem, 6vw, 4rem); color: var(--white); margin-bottom: 0.4rem; }
+  .hero-title span { color: var(--green); }
+  .hero-sub { color: var(--muted); font-size: 1rem; margin-bottom: 0.8rem; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+  .contract-chip { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,229,160,0.07); border: 1px solid rgba(0,229,160,0.2); border-radius: 100px; padding: 0.35rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--green); margin-bottom: 2.5rem; cursor: pointer; transition: background 0.2s; }
+  .contract-chip:hover { background: rgba(0,229,160,0.12); }
+  .connect-card { background: var(--mid); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 380px; margin: 0 auto; }
+  .connect-card h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+  .connect-card p { font-size: 0.84rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
 
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px}
-.card-title{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:18px;display:flex;align-items:center;gap:10px}
-.card-sub{color:var(--muted);font-size:0.82rem;margin-bottom:20px;line-height:1.5}
+  /* Network setup steps */
+  .net-steps { text-align: left; background: var(--navy); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; font-size: 0.8rem; }
+  .net-steps h4 { color: var(--green); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem; font-family: 'DM Mono', monospace; }
+  .net-row { display: flex; justify-content: space-between; padding: 0.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .net-row:last-child { border-bottom: none; }
+  .net-key { color: var(--muted); }
+  .net-val { color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.75rem; }
+  .net-val.hl { color: var(--green); }
+  .network-note { margin-top: 0.8rem; font-size: 0.78rem; color: var(--muted); text-align: center; }
 
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.fgroup{margin-bottom:14px}
-label{display:block;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-input[type=text],input[type=number]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.88rem;padding:11px 13px;outline:none;transition:border-color .2s}
-input:focus{border-color:var(--teal)}
-input::placeholder{color:#4a4f73}
+  #screenApp { display: none; }
 
-.btn{padding:13px 22px;background:var(--teal);color:var(--bg);border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:500;cursor:pointer;transition:opacity .2s,transform .15s}
-.btn:hover:not(:disabled){opacity:0.88;transform:translateY(-1px)}
-.btn:disabled{opacity:0.35;cursor:not-allowed}
-.btn.full{width:100%}
-.btn.secondary{background:transparent;border:1px solid var(--border);color:var(--white)}
-.btn.secondary:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}
-.btn.danger{background:var(--danger);color:var(--white)}
-.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+  .info-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+  .info-value { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--green); }
 
-.status-bar{display:none;align-items:center;gap:10px;background:rgba(43,217,163,0.08);border:1px solid rgba(43,217,163,0.2);border-radius:10px;padding:12px 14px;margin-top:14px;font-size:0.82rem;color:var(--teal)}
-.status-bar.show{display:flex}
-.spin{width:14px;height:14px;border:2px solid rgba(43,217,163,0.2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
+  .card { background: var(--mid); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; }
+  .card-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 1.2rem; font-family: 'DM Mono', monospace; }
 
-.error-box{display:none;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);border-radius:10px;padding:12px 14px;margin-top:14px;font-size:0.82rem;color:var(--danger)}
-.error-box.show{display:block}
+  .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.85rem; border-radius: 100px; font-size: 0.78rem; font-weight: 700; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .b-neutral { background: rgba(122,139,168,0.12); color: var(--muted);  border: 1px solid rgba(122,139,168,0.25); }
+  .b-active  { background: rgba(0,229,160,0.1);   color: var(--green);  border: 1px solid rgba(0,229,160,0.3); }
+  .b-warn    { background: rgba(245,166,35,0.1);  color: var(--amber);  border: 1px solid rgba(245,166,35,0.3); }
+  .b-error   { background: rgba(255,77,106,0.1);  color: var(--red);    border: 1px solid rgba(255,77,106,0.3); }
 
-.verdict-panel{display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:20px}
-.verdict-panel.show{display:block}
-.verdict-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.verdict-badge{font-family:'DM Mono',monospace;font-size:0.7rem;padding:4px 12px;border-radius:100px;letter-spacing:.05em}
-.verdict-badge.low{background:rgba(43,217,163,0.1);color:var(--teal);border:1px solid rgba(43,217,163,0.25)}
-.verdict-badge.medium{background:rgba(255,200,87,0.1);color:var(--warn);border:1px solid rgba(255,200,87,0.25)}
-.verdict-badge.high{background:rgba(255,107,107,0.1);color:var(--danger);border:1px solid rgba(255,107,107,0.25)}
-.verdict-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.verdict-stat{background:var(--surface2);border-radius:10px;padding:12px;text-align:center}
-.verdict-stat-val{font-family:'DM Mono',monospace;font-size:0.95rem}
-.verdict-stat-val.yes{color:var(--teal)}
-.verdict-stat-val.no{color:var(--danger)}
-.verdict-stat-lbl{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
-.reasoning-box{background:var(--surface2);border-left:3px solid var(--teal);border-radius:8px;padding:14px;font-size:0.85rem;line-height:1.6;color:var(--white)}
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 540px) { .grid2 { grid-template-columns: 1fr; } }
+  .info-cell { background: var(--navy); border-radius: 8px; padding: 0.75rem 1rem; }
+  .cell-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+  .cell-value { font-size: 0.84rem; color: var(--text); font-family: 'DM Mono', monospace; word-break: break-all; }
+  .cell-value.hl { color: var(--green); }
 
-.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
-.summary-item{background:var(--surface2);border-radius:8px;padding:10px 12px}
-.summary-item .k{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.summary-item .v{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--white);margin-top:3px;word-break:break-all}
+  .verdict { border-radius: 10px; padding: 1.1rem 1.3rem; margin-top: 1rem; }
+  .v-low    { background: rgba(0,229,160,0.07);   border: 1px solid rgba(0,229,160,0.25); }
+  .v-medium { background: rgba(245,166,35,0.07);  border: 1px solid rgba(245,166,35,0.25); }
+  .v-high   { background: rgba(255,77,106,0.07);  border: 1px solid rgba(255,77,106,0.25); }
+  .v-title  { font-family: 'DM Serif Display', serif; font-size: 1.15rem; margin-bottom: 0.45rem; }
+  .v-low .v-title    { color: var(--green); }
+  .v-medium .v-title { color: var(--amber); }
+  .v-high .v-title   { color: var(--red); }
+  .v-checks { display: flex; gap: 1.2rem; margin-bottom: 0.5rem; font-size: 0.82rem; flex-wrap: wrap; }
+  .v-reason { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
 
-.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.toggle-row label{margin:0;cursor:pointer}
-.toggle-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--teal);cursor:pointer}
+  label { display: block; font-size: 0.74rem; color: var(--muted); margin-bottom: 0.35rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  input, textarea { width: 100%; background: var(--black); border: 1px solid var(--border); border-radius: 8px; padding: 0.62rem 0.9rem; color: var(--white); font-family: 'Outfit', sans-serif; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
+  input:focus, textarea:focus { border-color: var(--green); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 72px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+  @media (max-width: 540px) { .row2 { grid-template-columns: 1fr; } }
+  .field { margin-bottom: 0.75rem; }
 
-.divider-label{text-align:center;color:var(--muted);font-size:0.72rem;letter-spacing:.08em;text-transform:uppercase;margin:8px 0 18px;position:relative}
+  .action-head { font-size: 0.88rem; font-weight: 700; color: var(--white); margin-bottom: 0.7rem; }
+  .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .divider { height: 1px; background: var(--border); margin: 1.1rem 0; }
 
-footer{border-top:1px solid var(--border);padding:24px 0;text-align:center;font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace}
-footer a{color:var(--teal);text-decoration:none}
+  .txlog { background: var(--black); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 1rem; max-height: 220px; overflow-y: auto; font-family: 'DM Mono', monospace; font-size: 0.73rem; line-height: 1.8; }
+  .txlog::-webkit-scrollbar { width: 3px; }
+  .txlog::-webkit-scrollbar-thumb { background: var(--border); }
+  .t-time { color: var(--muted); margin-right: 0.5rem; }
+  .t-ok   { color: var(--green); }
+  .t-err  { color: var(--red); }
+  .t-warn { color: var(--amber); }
+  .t-info { color: var(--text); }
 
-@media(max-width:600px){
-  .field-row{grid-template-columns:1fr}
-  .hero h1{font-size:2.2rem}
-  .verdict-grid{grid-template-columns:1fr 1fr}
-}
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999; background: var(--mid); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1.2rem; max-width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none; font-size: 0.85rem; line-height: 1.5; animation: up 0.3s ease; }
+  .toast.show { display: block; }
+  .toast.ok  { border-color: rgba(0,229,160,0.4); }
+  .toast.err { border-color: rgba(255,77,106,0.4); }
+  @keyframes up { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .spinner { width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .text-sm { font-size: 0.8rem; color: var(--muted); }
+  .mt { margin-top: 0.75rem; }
+
+  /* Alert banner */
+  .alert-banner { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3); border-radius: 10px; padding: 0.8rem 1rem; font-size: 0.82rem; color: var(--amber); margin-bottom: 1rem; line-height: 1.5; }
+  .alert-banner a { color: var(--amber); text-decoration: underline; }
+
+  /* Contract switcher */
+  .addr-input-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .addr-input-row input { flex: 1; font-size: 0.78rem; }
+  .addr-input-row .btn { padding: 0.5rem 1rem; font-size: 0.78rem; }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-
-<header>
-  <div class="logo"><span class="de">De</span><span class="livo">Livo</span></div>
-  <div class="header-right">
-    <div class="net-pill">
-      <div class="net-dot">GL</div>
-      <span>GenLayer Bradbury Testnet</span>
+<nav>
+  <div class="logo">De<span>Livo</span></div>
+  <div class="nav-right">
+    <div class="gl-badge">
+      <div class="gl-dot">GL</div>
+      Testnet Bradbury
     </div>
-    <button class="connect-btn" id="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+    <div class="wallet-pill" id="walletPill">—</div>
+    <button class="btn btn-outline" id="walletBtn" onclick="connectWallet()" style="font-size:0.82rem;padding:0.5rem 1.1rem">
+      Connect Wallet
+    </button>
   </div>
-</header>
+</nav>
 
-<div class="hero">
-  <h1><span class="de">De</span><span class="livo">Livo</span></h1>
-  <p>AI-verified parcel delivery on GenLayer. Every pickup, route, and handoff verified by LLM consensus before payment is released.</p>
-</div>
+<!-- SCREEN 1: CONNECT -->
+<div id="screenConnect" class="page">
+  <h1 class="hero-title">De<span>Livo</span></h1>
+  <p class="hero-sub">AI-verified parcel delivery on GenLayer. GPS, photo proof, and fraud detection — all verified by LLM consensus before payment moves.</p>
 
-<div class="contract-badge">
-  <div class="pulse"></div>
-  <span>Contract:</span>
-  <code id="contract-display">0x731c...Cf173</code>
-</div>
-
-<div class="status-strip" id="status-strip">
-  <div class="status-chip" data-status="pending">Pending</div>
-  <div class="status-chip" data-status="picked_up">Picked Up</div>
-  <div class="status-chip" data-status="in_transit">In Transit</div>
-  <div class="status-chip" data-status="ai_reviewing">AI Reviewing</div>
-  <div class="status-chip" data-status="ai_approved">Approved</div>
-  <div class="status-chip" data-status="disputed">Disputed</div>
-  <div class="status-chip" data-status="confirmed">Confirmed</div>
-</div>
-
-<!-- Delivery Config -->
-<div class="card">
-  <div class="card-title">📦 Delivery Configuration</div>
-  <div class="card-sub">Read-only snapshot of this contract's roles and current mode.</div>
-  <div id="config-display" class="summary-grid">
-    <div class="summary-item"><div class="k">Loading...</div></div>
+  <div class="contract-chip" onclick="copyContract()" title="Click to copy">
+    🔗 Contract: 0xFed5F519610354c7AECa2a1298B9EfFFF1FD5C08
   </div>
-  <button class="btn secondary full" style="margin-top:14px" onclick="loadAll()">Refresh State</button>
-</div>
 
-<!-- Test Mode One-Click -->
-<div class="card">
-  <div class="card-title">⚡ Quick Test Delivery</div>
-  <div class="card-sub">Only available when the contract is in test mode. Simulates a full Lagos → Ikeja delivery with one click — pickup, waypoint, delivery, and AI fraud verification.</div>
-  <button class="btn full" id="test-btn" onclick="runTestDelivery()">Run Test Delivery</button>
-  <div class="status-bar" id="test-status"><div class="spin"></div><span id="test-status-text">Running...</span></div>
-  <div class="error-box" id="test-error"></div>
-</div>
+  <div class="connect-card">
+    <h3>Connect your wallet</h3>
+    <p>Uses MetaMask or any EIP-1193 wallet. The app will add <strong>GenLayer Testnet Bradbury</strong> automatically.</p>
 
-<!-- Driver Actions -->
-<div class="card">
-  <div class="card-title">🚚 Driver Actions</div>
-  <div class="card-sub">Log pickup and delivery GPS coordinates. Delivery submission triggers AI fraud verification automatically.</div>
-
-  <div class="divider-label">Step 1 — Log Pickup</div>
-  <div class="field-row">
-    <div class="fgroup"><label>Latitude</label><input type="text" id="pickup-lat" placeholder="6.4550"/></div>
-    <div class="fgroup"><label>Longitude</label><input type="text" id="pickup-lng" placeholder="3.3841"/></div>
-  </div>
-  <div class="fgroup"><label>Timestamp (unix)</label><input type="text" id="pickup-time" placeholder="1748000000"/></div>
-  <button class="btn secondary full" onclick="logPickup()">Log Pickup</button>
-
-  <div class="divider-label" style="margin-top:24px">Step 2 — Log Delivery (triggers AI verification)</div>
-  <div class="field-row">
-    <div class="fgroup"><label>Latitude</label><input type="text" id="delivery-lat" placeholder="6.6018"/></div>
-    <div class="fgroup"><label>Longitude</label><input type="text" id="delivery-lng" placeholder="3.3515"/></div>
-  </div>
-  <div class="fgroup"><label>Timestamp (unix)</label><input type="text" id="delivery-time" placeholder="1748002700"/></div>
-  <div class="fgroup"><label>Photo Proof URL</label><input type="text" id="photo-url" placeholder="https://..."/></div>
-  <button class="btn full" onclick="logDelivery()">Log Delivery & Verify</button>
-
-  <div class="status-bar" id="driver-status"><div class="spin"></div><span id="driver-status-text">Submitting...</span></div>
-  <div class="error-box" id="driver-error"></div>
-</div>
-
-<!-- AI Verdict -->
-<div class="card">
-  <div class="card-title">🛡️ DeLivo Shield — AI Verdict</div>
-  <div class="card-sub">Multi-validator consensus result on fraud risk, route consistency, and photo proof.</div>
-  <button class="btn secondary full" onclick="loadVerdict()">Load Latest Verdict</button>
-
-  <div class="verdict-panel" id="verdict-panel">
-    <div class="verdict-head">
-      <span style="font-size:0.85rem;color:var(--muted)">Fraud Risk</span>
-      <div class="verdict-badge" id="verdict-badge">—</div>
+    <!-- Network details always visible -->
+    <div class="net-steps">
+      <h4>// Network Details</h4>
+      <div class="net-row"><span class="net-key">Network</span><span class="net-val">GenLayer Testnet Bradbury</span></div>
+      <div class="net-row"><span class="net-key">Chain ID</span><span class="net-val hl">4221</span></div>
+      <div class="net-row"><span class="net-key">RPC URL</span><span class="net-val">rpc-bradbury.genlayer.com</span></div>
+      <div class="net-row"><span class="net-key">Currency</span><span class="net-val">GEN</span></div>
+      <div class="net-row"><span class="net-key">Explorer</span><span class="net-val">explorer-bradbury.genlayer.com</span></div>
     </div>
-    <div class="verdict-grid">
-      <div class="verdict-stat"><div class="verdict-stat-val" id="route-ok-val">—</div><div class="verdict-stat-lbl">Route Consistent</div></div>
-      <div class="verdict-stat"><div class="verdict-stat-val" id="photo-ok-val">—</div><div class="verdict-stat-lbl">Photo Verified</div></div>
+
+    <button class="btn btn-green" style="width:100%" id="connectBtn" onclick="connectWallet()">
+      Connect Wallet
+    </button>
+    <div class="network-note mt">
+      Need testnet GEN? <a href="https://shipyard.genlayer.com" target="_blank" style="color:var(--green)">Get tokens on Shipyard ↗</a>
     </div>
-    <div class="reasoning-box" id="reasoning-text">—</div>
   </div>
 </div>
 
-<!-- Recipient Actions -->
-<div class="card">
-  <div class="card-title">✅ Recipient Actions</div>
-  <div class="card-sub">Confirm receipt to release escrowed payment, or raise a dispute for Optimistic Democracy review.</div>
-  <div class="btn-row">
-    <button class="btn" style="flex:1" onclick="confirmDelivery()">Confirm Delivery</button>
-    <button class="btn secondary" style="flex:1" onclick="document.getElementById('dispute-fields').style.display='block'">Raise Dispute</button>
+<!-- SCREEN 2: APP -->
+<div id="screenApp" class="page">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <div class="info-label">Wallet</div>
+      <div class="info-value" id="walletDisplay">—</div>
+    </div>
+    <div style="text-align:right">
+      <div class="info-label">Contract (Bradbury)</div>
+      <div class="info-value" id="contractDisplay">0xFed5F519...FD5C08</div>
+    </div>
+    <div id="statusBadge">
+      <span class="badge b-neutral"><span class="badge-dot"></span>Loading</span>
+    </div>
   </div>
-  <div id="dispute-fields" style="display:none;margin-top:16px">
-    <div class="fgroup"><label>Dispute Reason</label><input type="text" id="dispute-reason" placeholder="Package was damaged on arrival..."/></div>
-    <button class="btn danger full" onclick="raiseDispute()">Submit Dispute</button>
+
+  <!-- Contract address switcher -->
+  <div class="card" style="padding:1rem 1.2rem">
+    <div class="card-label">// Contract Address</div>
+    <div class="addr-input-row">
+      <input type="text" id="contractInput" value="0xFed5F519610354c7AECa2a1298B9EfFFF1FD5C08" placeholder="0x..."/>
+      <button class="btn btn-outline" onclick="switchContract()">Load</button>
+    </div>
+    <div style="font-size:0.75rem;color:var(--muted)">Try a different deployed contract address (e.g. your own test deployment)</div>
   </div>
-  <div class="status-bar" id="recipient-status"><div class="spin"></div><span id="recipient-status-text">Submitting...</span></div>
-  <div class="error-box" id="recipient-error"></div>
+
+  <!-- Delivery info card -->
+  <div class="card">
+    <div class="card-label">// Delivery Info</div>
+    <div class="grid2">
+      <div class="info-cell"><div class="cell-label">Delivery ID</div><div class="cell-value" id="infoId">—</div></div>
+      <div class="info-cell"><div class="cell-label">Status</div><div class="cell-value" id="infoStatus">—</div></div>
+      <div class="info-cell"><div class="cell-label">Driver</div><div class="cell-value hl" id="infoDriver">—</div></div>
+      <div class="info-cell"><div class="cell-label">Recipient</div><div class="cell-value hl" id="infoRecipient">—</div></div>
+      <div class="info-cell"><div class="cell-label">Payment</div><div class="cell-value" id="infoPayment">—</div></div>
+      <div class="info-cell"><div class="cell-label">Waypoints</div><div class="cell-value" id="infoWaypoints">—</div></div>
+    </div>
+    <div id="verdictBox"></div>
+  </div>
+
+  <!-- Actions card -->
+  <div class="card">
+    <div class="card-label">// Actions</div>
+
+    <!-- Test delivery (test_mode) -->
+    <div id="aTest" style="display:none">
+      <div class="action-head">⚡ Run Test Delivery</div>
+      <p class="text-sm" style="margin-bottom:0.8rem">Simulates a full Lagos → Ikeja delivery with pickup, waypoint, and AI fraud detection. After it completes (~30s for consensus), click Confirm Delivery.</p>
+      <button class="btn btn-green" id="btnTest" onclick="act('run_test_delivery',[],'Run Test Delivery')">
+        Run Test Delivery
+      </button>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Log Pickup (production) -->
+    <div id="aPickup" style="display:none">
+      <div class="action-head">📍 Log Pickup</div>
+      <div class="row2">
+        <div><label>Latitude</label><input type="number" id="pLat" placeholder="6.4550" step="0.0001"/></div>
+        <div><label>Longitude</label><input type="number" id="pLng" placeholder="3.3841" step="0.0001"/></div>
+      </div>
+      <button class="btn btn-green" onclick="doPickup()">Log Pickup</button>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Log Delivery + AI verify (production) -->
+    <div id="aDelivery" style="display:none">
+      <div class="action-head">📸 Log Delivery + AI Verify</div>
+      <div class="row2">
+        <div><label>Latitude</label><input type="number" id="dLat" placeholder="6.6018" step="0.0001"/></div>
+        <div><label>Longitude</label><input type="number" id="dLng" placeholder="3.3515" step="0.0001"/></div>
+      </div>
+      <div class="field"><label>Photo Proof URL</label><input type="text" id="dPhoto" placeholder="https://ipfs.io/ipfs/..."/></div>
+      <button class="btn btn-green" onclick="doDelivery()">Submit + AI Verify</button>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Confirm / Dispute -->
+    <div id="aConfirm" style="display:none">
+      <div class="action-head">✅ Recipient Actions</div>
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="act('confirm_delivery',[],'Confirm Delivery')">Confirm Delivery</button>
+        <button class="btn btn-outline" onclick="toggleEl('disputePanel')">Raise Dispute</button>
+      </div>
+      <div id="disputePanel" style="display:none;margin-top:0.8rem">
+        <div class="field"><label>Reason</label><textarea id="dReason" placeholder="Describe the issue..."></textarea></div>
+        <button class="btn btn-red" onclick="doDispute()">Submit Dispute</button>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Resolve dispute (shipper) -->
+    <div id="aResolve" style="display:none">
+      <div class="action-head">⚖️ Resolve Dispute <span class="text-sm">(Shipper only)</span></div>
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="act('resolve_dispute',[true],'Pay Driver')">Pay Driver</button>
+        <button class="btn btn-red"   onclick="act('resolve_dispute',[false],'Refund Shipper')">Refund Shipper</button>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <!-- No actions -->
+    <div id="aFinished" style="display:none">
+      <p class="text-sm">Delivery is complete. Deploy a new contract to start another delivery.</p>
+      <div class="divider"></div>
+    </div>
+
+    <button class="btn btn-outline" onclick="refresh()" id="refreshBtn" style="font-size:0.82rem">
+      ↻ Refresh State
+    </button>
+  </div>
+
+  <!-- TX Log -->
+  <div class="card">
+    <div class="card-label">// Transaction Log</div>
+    <div class="txlog" id="txLog">
+      <span class="t-info">Connecting to contract...</span>
+    </div>
+  </div>
+
 </div>
 
-<!-- Shipper Actions -->
-<div class="card">
-  <div class="card-title">⚖️ Shipper Actions</div>
-  <div class="card-sub">Resolve escalated disputes or cancel before pickup.</div>
-  <div class="btn-row">
-    <button class="btn secondary" style="flex:1" onclick="resolveDispute(true)">Resolve — Favor Driver</button>
-    <button class="btn secondary" style="flex:1" onclick="resolveDispute(false)">Resolve — Refund Shipper</button>
-  </div>
-  <button class="btn danger full" style="margin-top:10px" onclick="cancelDelivery()">Cancel Delivery</button>
-  <div class="status-bar" id="shipper-status"><div class="spin"></div><span id="shipper-status-text">Submitting...</span></div>
-  <div class="error-box" id="shipper-error"></div>
-</div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-</div>
+<script type="module">
 
-<footer>Built on <a href="#">GenLayer</a> · DeLivo Shield Engine · Bradbury Testnet</footer>
+// ════════════════════════════════════════════
+//  CONFIG — Testnet Bradbury (Chain ID 4221)
+// ════════════════════════════════════════════
+const DEFAULT_CONTRACT = '0xFed5F519610354c7AECa2a1298B9EfFFF1FD5C08';
+const RPC              = 'https://rpc-bradbury.genlayer.com';
+const CHAIN_ID_DEC     = 4221;
+const CHAIN_ID_HEX     = '0x' + CHAIN_ID_DEC.toString(16); // 0x107D
+const EXPLORER         = 'https://explorer-bradbury.genlayer.com';
 
-<script>
-const CONTRACT_ADDRESS = "0x731c3a7ABc8e9c5b84A4C3AC3a6a5bBf606Cf173";
-const GENLAYER_RPC = "https://zksync-os-testnet-genlayer.zksync.dev";
-const CHAIN_ID = 4221;
+let wallet   = null;
+let CONTRACT = DEFAULT_CONTRACT;
 
-let connectedAddress = null;
+// ── Helpers ─────────────────────────────────
+window.copyContract = function() {
+  navigator.clipboard.writeText(CONTRACT).then(() => showToast('Contract address copied!', 'ok'));
+};
 
-// ── Read calls via genlayer-js ──────────────────────────
-async function callContract(method, args = {}) {
-  const { createClient, testnetBradbury } = await import("https://esm.sh/genlayer-js@latest");
-  // Read-only client needs no account
-  const readClient = createClient({ chain: testnetBradbury });
-  const result = await readClient.readContract({
-    address: CONTRACT_ADDRESS,
-    functionName: method,
-    args: Object.values(args),
-  });
-  return result;
-}
-
-// ── Write calls via genlayer-js ─────────────────────────
-// genlayer-js handles all GenLayer-specific transaction encoding.
-// It supports MetaMask signing by passing the wallet address as account.
-let glClient = null;
-
-async function getGLClient() {
-  if (glClient) return glClient;
-  const { createClient, testnetBradbury } = await import("https://esm.sh/genlayer-js@latest");
-  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-  connectedAddress = accounts[0];
-  updateConnectButton();
-  // Pass wallet address — genlayer-js will use MetaMask for signing
-  glClient = createClient({
-    chain: testnetBradbury,
-    account: connectedAddress,
-  });
-  await glClient.initializeConsensusSmartContract();
-  return glClient;
-}
-
-async function sendTransaction(method, args = {}) {
-  if (!window.ethereum) {
-    throw new Error("No wallet found. Please install MetaMask.");
+window.switchContract = function() {
+  const val = document.getElementById('contractInput').value.trim();
+  if (!val.startsWith('0x') || val.length !== 42) {
+    showToast('Invalid address — must be 0x + 40 hex chars', 'err');
+    return;
   }
-  const client = await getGLClient();
-  const txHash = await client.writeContract({
-    address: CONTRACT_ADDRESS,
-    functionName: method,
-    args: Object.values(args),
-    value: 0n,
-  });
-  return txHash;
-}
+  CONTRACT = val;
+  document.getElementById('contractDisplay').textContent = CONTRACT.slice(0,10)+'...'+CONTRACT.slice(-6);
+  document.querySelector('.contract-chip')?.setAttribute('title', CONTRACT);
+  log('Switched to contract: ' + CONTRACT, 'info');
+  refresh();
+};
 
-async function waitForTx(txHash, statusEl) {
-  const { TransactionStatus } = await import("https://esm.sh/genlayer-js@latest");
-  const client = await getGLClient();
-  let elapsed = 0;
-  const receipt = await client.waitForTransactionReceipt({
-    hash: txHash,
-    status: TransactionStatus.FINALIZED,
-    retries: 100,
-    interval: 3000,
-    onRetry: () => {
-      elapsed += 3;
-      if (statusEl) statusEl.textContent = `Validators processing... (${elapsed}s elapsed)`;
-    }
-  });
-  return receipt;
-}
-
-// ── Wallet UI ────────────────────────────────────────────
-async function connectWallet() {
-  try {
-    if (!window.ethereum) {
-      alert("No wallet found. Please install MetaMask or Rabby.");
-      return;
-    }
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    connectedAddress = accounts[0];
-    updateConnectButton();
-  } catch (e) {
-    alert(e.message);
-  }
-}
-function updateConnectButton() {
-  const btn = document.getElementById("connect-btn");
-  if (connectedAddress) {
-    btn.textContent = connectedAddress.slice(0,6) + "..." + connectedAddress.slice(-4);
-    btn.classList.add("connected");
-  }
-}
-
-// ── Status strip ─────────────────────────────────────────
-function highlightStatus(status) {
-  document.querySelectorAll(".status-chip").forEach(chip => {
-    chip.classList.toggle("active", chip.dataset.status === status);
-  });
-}
-
-// ── Load all state ───────────────────────────────────────
-async function loadAll() {
-  const grid = document.getElementById("config-display");
-  grid.innerHTML = `<div class="summary-item"><div class="k">Loading...</div></div>`;
-  try {
-    const configRaw = await callContract("get_config");
-    const config = JSON.parse(configRaw);
-    grid.innerHTML = `
-      <div class="summary-item"><div class="k">Delivery ID</div><div class="v">${config.delivery_id}</div></div>
-      <div class="summary-item"><div class="k">Mode</div><div class="v">${config.test_mode ? "TEST MODE" : "PRODUCTION"}</div></div>
-      <div class="summary-item"><div class="k">Driver</div><div class="v">${config.driver.slice(0,10)}...</div></div>
-      <div class="summary-item"><div class="k">Recipient</div><div class="v">${config.recipient.slice(0,10)}...</div></div>
-    `;
-    const statusRaw = await callContract("get_status");
-    highlightStatus(statusRaw);
-  } catch (e) {
-    grid.innerHTML = `<div class="summary-item" style="grid-column:1/-1"><div class="k" style="color:var(--danger)">${e.message}</div></div>`;
-  }
-}
-
-// ── Test delivery ────────────────────────────────────────
-async function runTestDelivery() {
-  const btn = document.getElementById("test-btn");
-  const bar = document.getElementById("test-status");
-  const txt = document.getElementById("test-status-text");
-  const err = document.getElementById("test-error");
-  err.classList.remove("show");
+// ── Connect wallet ───────────────────────────
+window.connectWallet = async function() {
+  const btn = document.getElementById('connectBtn');
+  btn.innerHTML = '<span class="spinner"></span> Connecting...';
   btn.disabled = true;
-  bar.classList.add("show");
-  txt.textContent = "Connecting wallet...";
+
   try {
-    const txHash = await sendTransaction("run_test_delivery", {});
-    txt.textContent = "Simulating delivery + running AI fraud check...";
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
-    await loadVerdict();
+    if (!window.ethereum) throw new Error('No EIP-1193 wallet found. Install MetaMask.');
+
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (!accounts || !accounts[0]) throw new Error('No accounts returned.');
+    wallet = accounts[0];
+
+    // Try to switch to Bradbury; if not added, add it
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: CHAIN_ID_HEX }],
+      });
+    } catch (switchErr) {
+      // 4902 = chain not added; -32603 = same on some wallets (Rabby)
+      if (switchErr.code === 4902 || switchErr.code === -32603) {
+        log('Adding Bradbury network to wallet...', 'warn');
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId:  CHAIN_ID_HEX,            // 0x107D
+            chainName: 'GenLayer Testnet Bradbury',
+            rpcUrls:  [RPC],                   // https://rpc-bradbury.genlayer.com
+            nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
+            blockExplorerUrls: [EXPLORER],
+          }],
+        });
+      } else {
+        throw switchErr;
+      }
+    }
+
+    // Verify we're on the right chain
+    const chainNow = await window.ethereum.request({ method: 'eth_chainId' });
+    if (parseInt(chainNow, 16) !== CHAIN_ID_DEC) {
+      throw new Error(`Still on chain ${parseInt(chainNow, 16)} — please switch to Bradbury (4221) manually.`);
+    }
+
+    // Update UI
+    const short = wallet.slice(0,6) + '...' + wallet.slice(-4);
+    document.getElementById('walletPill').textContent = short;
+    document.getElementById('walletPill').style.display = 'block';
+    document.getElementById('walletBtn').style.display = 'none';
+    document.getElementById('walletDisplay').textContent = wallet;
+    document.getElementById('screenConnect').style.display = 'none';
+    document.getElementById('screenApp').style.display = 'block';
+
+    log('✓ Wallet connected: ' + wallet + ' (Chain 4221)', 'ok');
+    await refresh();
+
   } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
-  } finally {
+    const msg = e.code === 4001 ? 'Connection cancelled.' : (e.message || String(e));
+    showToast(msg, 'err');
+    log('Connect error: ' + msg, 'err');
+    btn.innerHTML = 'Connect Wallet';
     btn.disabled = false;
   }
+};
+
+// ── Read contract via gen_call ───────────────
+async function rpcCall(fn, args = []) {
+  const body = {
+    jsonrpc: '2.0',
+    id:      Date.now(),
+    method:  'gen_call',
+    params:  [{
+      to:   CONTRACT,
+      data: { function: fn, args },
+    }],
+  };
+
+  const res = await fetch(RPC, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status} from RPC`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+  return json.result;
 }
 
-// ── Driver: log pickup ───────────────────────────────────
-async function logPickup() {
-  const lat = parseFloat(document.getElementById("pickup-lat").value);
-  const lng = parseFloat(document.getElementById("pickup-lng").value);
-  const timestamp = document.getElementById("pickup-time").value.trim();
-  const bar = document.getElementById("driver-status");
-  const txt = document.getElementById("driver-status-text");
-  const err = document.getElementById("driver-error");
-  err.classList.remove("show");
-  if (isNaN(lat) || isNaN(lng) || !timestamp) { err.textContent = "⚠️ Fill all pickup fields."; err.classList.add("show"); return; }
-  bar.classList.add("show");
-  txt.textContent = "Logging pickup...";
+// ── Refresh state ────────────────────────────
+window.refresh = async function() {
+  const btn = document.getElementById('refreshBtn');
+  if (btn) { btn.innerHTML = '<span class="spinner"></span> Refreshing...'; btn.disabled = true; }
+  log('Reading contract state from Bradbury...', 'warn');
+
   try {
-    const txHash = await sendTransaction("log_pickup", { lat, lng, timestamp });
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
+    const [summary, config, verdict] = await Promise.all([
+      rpcCall('get_delivery_summary'),
+      rpcCall('get_config'),
+      rpcCall('get_ai_verdict'),
+    ]);
+
+    const state = { ...(summary || {}), ...(config || {}), ...(verdict || {}) };
+    renderState(state);
+    log('✓ State loaded', 'ok');
+
   } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
+    const msg = e.message || String(e);
+    log('⚠ Could not read state: ' + msg, 'err');
+    // Fallback: show test-mode actions so user can still attempt a call
+    renderState({ status: 'pending', test_mode: true });
+  } finally {
+    if (btn) { btn.innerHTML = '↻ Refresh State'; btn.disabled = false; }
+  }
+};
+
+// ── Render state ─────────────────────────────
+function renderState(s) {
+  const status = s.status || 'pending';
+
+  const bMap = {
+    pending:      ['b-neutral', '⏳ Pending'],
+    picked_up:    ['b-active',  '📦 Picked Up'],
+    in_transit:   ['b-active',  '🚚 In Transit'],
+    ai_reviewing: ['b-warn',    '🤖 AI Reviewing'],
+    ai_approved:  ['b-active',  '✅ AI Approved'],
+    disputed:     ['b-error',   '⚠️ Disputed'],
+    confirmed:    ['b-active',  '✓ Confirmed'],
+    escalated:    ['b-error',   '🔴 Escalated'],
+    paid:         ['b-active',  '💰 Paid'],
+    refunded:     ['b-warn',    '↩ Refunded'],
+    cancelled:    ['b-neutral', '✕ Cancelled'],
+  };
+  const [bc, bl] = bMap[status] || ['b-neutral', status];
+  document.getElementById('statusBadge').innerHTML =
+    `<span class="badge ${bc}"><span class="badge-dot"></span>${bl}</span>`;
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v != null ? v : '—'; };
+  set('infoId',        s.delivery_id || s['delivery_id']);
+  set('infoStatus',    status);
+  set('infoDriver',    s.driver    ? s.driver.slice(0,8)+'...'+s.driver.slice(-6) : null);
+  set('infoRecipient', s.recipient ? s.recipient.slice(0,8)+'...'+s.recipient.slice(-6) : null);
+
+  const amt = s.payment_amount;
+  set('infoPayment', amt != null ? (Number(amt)/1e18).toFixed(4)+' GEN' : null);
+
+  const wc = s.waypoint_count ?? s.waypoints?.length;
+  set('infoWaypoints', wc != null ? String(wc) : null);
+
+  // AI verdict panel
+  const vb = document.getElementById('verdictBox');
+  if (s.ai_fraud_risk) {
+    const r = s.ai_fraud_risk;
+    vb.innerHTML = `
+      <div class="verdict v-${r}">
+        <div class="v-title">DeLivo Shield — ${r.toUpperCase()} RISK</div>
+        <div class="v-checks">
+          <span>${s.ai_route_ok ? '✅' : '❌'} Route OK</span>
+          <span>${s.ai_photo_ok ? '✅' : '❌'} Photo OK</span>
+        </div>
+        <div class="v-reason">${s.ai_reasoning || ''}</div>
+      </div>`;
+  } else {
+    vb.innerHTML = '';
+  }
+
+  // Show / hide action sections
+  const tm   = s.test_mode === true || s.test_mode === 'true';
+  const done = ['confirmed','paid','refunded','cancelled'].includes(status);
+  const vis  = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? 'block' : 'none'; };
+
+  vis('aTest',     tm && status === 'pending');
+  vis('aPickup',   !tm && status === 'pending');
+  vis('aDelivery', ['picked_up','in_transit'].includes(status));
+  vis('aConfirm',  ['ai_approved','disputed'].includes(status));
+  vis('aResolve',  status === 'escalated');
+  vis('aFinished', done);
+}
+
+// ── Send write transaction ───────────────────
+//  GenLayer Bradbury: encode as JSON calldata
+async function sendTx(fn, args, label) {
+  log(`Calling ${fn}()...`, 'warn');
+  showToast(`Submitting: ${label}`, 'ok');
+
+  try {
+    // Encode calldata: GenLayer uses JSON-encoded function call
+    // Format: keccak4-selector (first 4 bytes) + JSON-encoded args as UTF-8 hex
+    const calldata = buildCalldata(fn, args);
+
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from:  wallet,
+        to:    CONTRACT,
+        data:  calldata,
+        gas:   '0x' + (600000).toString(16),
+        value: '0x0',
+      }],
+    });
+
+    log(`✓ ${label} submitted: ${txHash}`, 'ok');
+    if (txHash) {
+      log(`  Explorer: ${EXPLORER}/tx/${txHash}`, 'info');
+    }
+    showToast(`${label} submitted! Waiting for AI consensus (~30s)…`, 'ok');
+
+    // Auto-refresh after consensus window
+    setTimeout(() => { log('Auto-refreshing after consensus window…', 'warn'); refresh(); }, 28000);
+    return txHash;
+
+  } catch (e) {
+    const msg = e.code === 4001 ? 'Transaction cancelled by user.' : (e.message || String(e));
+    log(`✗ ${label} — ${msg}`, 'err');
+    showToast(msg, 'err');
   }
 }
 
-// ── Driver: log delivery ─────────────────────────────────
-async function logDelivery() {
-  const lat = parseFloat(document.getElementById("delivery-lat").value);
-  const lng = parseFloat(document.getElementById("delivery-lng").value);
-  const timestamp = document.getElementById("delivery-time").value.trim();
-  const photo_url = document.getElementById("photo-url").value.trim();
-  const bar = document.getElementById("driver-status");
-  const txt = document.getElementById("driver-status-text");
-  const err = document.getElementById("driver-error");
-  err.classList.remove("show");
-  if (isNaN(lat) || isNaN(lng) || !timestamp || !photo_url) { err.textContent = "⚠️ Fill all delivery fields."; err.classList.add("show"); return; }
-  bar.classList.add("show");
-  txt.textContent = "Submitting delivery + triggering AI verification...";
-  try {
-    const txHash = await sendTransaction("log_delivery", { lat, lng, timestamp, photo_url });
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
-    await loadVerdict();
-  } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
-  }
+// GenLayer calldata encoding:
+// GenLayer intelligent contracts are called with JSON-encoded arguments.
+// The ABI selector is keccak256(fn_name)[0:4] but GenLayer also supports
+// a simpler format where the entire payload is JSON: {"function":"name","args":[...]}
+// We use the full JSON body format which Bradbury nodes accept.
+function buildCalldata(fn, args) {
+  // GenLayer Bradbury node accepts raw JSON as calldata (UTF-8 hex)
+  const payload = JSON.stringify({ function: fn, args });
+  const bytes   = new TextEncoder().encode(payload);
+  const hex     = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  return '0x' + hex;
 }
 
-// ── Load AI verdict ───────────────────────────────────────
-async function loadVerdict() {
-  const panel = document.getElementById("verdict-panel");
-  try {
-    const raw = await callContract("get_ai_verdict");
-    const v = JSON.parse(raw);
-    panel.classList.add("show");
-    const badge = document.getElementById("verdict-badge");
-    badge.textContent = (v.fraud_risk || "—").toUpperCase();
-    badge.className = "verdict-badge " + (v.fraud_risk || "");
-    const routeEl = document.getElementById("route-ok-val");
-    routeEl.textContent = v.route_ok ? "YES" : "NO";
-    routeEl.className = "verdict-stat-val " + (v.route_ok ? "yes" : "no");
-    const photoEl = document.getElementById("photo-ok-val");
-    photoEl.textContent = v.photo_ok ? "YES" : "NO";
-    photoEl.className = "verdict-stat-val " + (v.photo_ok ? "yes" : "no");
-    document.getElementById("reasoning-text").textContent = v.reasoning || "No reasoning available yet.";
-  } catch (e) {
-    console.log("Verdict load failed:", e.message);
-  }
+// ── Action handlers ──────────────────────────
+window.act = async function(fn, args, label) { await sendTx(fn, args, label); };
+
+window.doPickup = async function() {
+  const lat = parseFloat(document.getElementById('pLat').value) || 6.4550;
+  const lng = parseFloat(document.getElementById('pLng').value) || 3.3841;
+  await sendTx('log_pickup', [lat, lng, Math.floor(Date.now() / 1000)], 'Log Pickup');
+};
+
+window.doDelivery = async function() {
+  const lat   = parseFloat(document.getElementById('dLat').value)   || 6.6018;
+  const lng   = parseFloat(document.getElementById('dLng').value)   || 3.3515;
+  const photo = document.getElementById('dPhoto').value.trim();
+  if (!photo) { showToast('Enter a photo proof URL', 'err'); return; }
+  await sendTx('log_delivery', [lat, lng, Math.floor(Date.now() / 1000), photo], 'Log Delivery + AI Verify');
+};
+
+window.doDispute = async function() {
+  const r = document.getElementById('dReason').value.trim();
+  if (!r) { showToast('Enter a dispute reason', 'err'); return; }
+  await sendTx('raise_dispute', [r], 'Raise Dispute');
+};
+
+window.toggleEl = function(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
+
+// ── Log & toast ──────────────────────────────
+function log(msg, type = 'info') {
+  const el = document.getElementById('txLog');
+  if (!el) return;
+  const cls = { ok:'t-ok', err:'t-err', warn:'t-warn', info:'t-info' }[type] || 't-info';
+  const d   = document.createElement('div');
+  d.innerHTML = `<span class="t-time">${new Date().toLocaleTimeString()}</span><span class="${cls}">${msg}</span>`;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
 }
 
-// ── Recipient actions ────────────────────────────────────
-async function confirmDelivery() {
-  const bar = document.getElementById("recipient-status");
-  const txt = document.getElementById("recipient-status-text");
-  const err = document.getElementById("recipient-error");
-  err.classList.remove("show");
-  bar.classList.add("show");
-  txt.textContent = "Confirming delivery & releasing payment...";
-  try {
-    const txHash = await sendTransaction("confirm_delivery", {});
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
-  } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
-  }
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 5000);
 }
 
-async function raiseDispute() {
-  const reason = document.getElementById("dispute-reason").value.trim();
-  const bar = document.getElementById("recipient-status");
-  const txt = document.getElementById("recipient-status-text");
-  const err = document.getElementById("recipient-error");
-  err.classList.remove("show");
-  if (!reason) { err.textContent = "⚠️ Please provide a dispute reason."; err.classList.add("show"); return; }
-  bar.classList.add("show");
-  txt.textContent = "Raising dispute...";
-  try {
-    const txHash = await sendTransaction("raise_dispute", { reason });
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
-  } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
-  }
-}
+// Account & chain change listeners
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', accts => {
+    if (accts[0]) {
+      wallet = accts[0];
+      document.getElementById('walletDisplay').textContent = wallet;
+      document.getElementById('walletPill').textContent = wallet.slice(0,6)+'...'+wallet.slice(-4);
+      log('Account switched: ' + wallet, 'info');
+    }
+  });
 
-// ── Shipper actions ──────────────────────────────────────
-async function resolveDispute(favourDriver) {
-  const bar = document.getElementById("shipper-status");
-  const txt = document.getElementById("shipper-status-text");
-  const err = document.getElementById("shipper-error");
-  err.classList.remove("show");
-  bar.classList.add("show");
-  txt.textContent = "Resolving dispute...";
-  try {
-    const txHash = await sendTransaction("resolve_dispute", { favour_driver: favourDriver });
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
-  } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
-  }
+  window.ethereum.on('chainChanged', chainId => {
+    const id = parseInt(chainId, 16);
+    log(`Chain changed to ${id}`, id === CHAIN_ID_DEC ? 'ok' : 'warn');
+    if (id !== CHAIN_ID_DEC) {
+      showToast(`Wrong network (${id}) — please switch to Bradbury (4221)`, 'err');
+    } else {
+      refresh();
+    }
+  });
 }
-
-async function cancelDelivery() {
-  const bar = document.getElementById("shipper-status");
-  const txt = document.getElementById("shipper-status-text");
-  const err = document.getElementById("shipper-error");
-  err.classList.remove("show");
-  bar.classList.add("show");
-  txt.textContent = "Cancelling delivery...";
-  try {
-    const txHash = await sendTransaction("cancel_delivery", {});
-    await waitForTx(txHash, txt);
-    bar.classList.remove("show");
-    await loadAll();
-  } catch (e) {
-    bar.classList.remove("show");
-    err.textContent = "⚠️ " + e.message;
-    err.classList.add("show");
-  }
-}
-
-// ── Init ──────────────────────────────────────────────────
-loadAll();
-loadVerdict();
 </script>
-
 </body>
 </html>
